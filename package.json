@@ -1,0 +1,27 @@
+{
+  "name": "statistic_service",
+  "version": "1.6.0",
+  "description": "Statistik Service",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Christoph Steiner",
+  "license": "ISC",
+  "dependencies": {
+    "app-root-path": "^3.0.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "moment-timezone": "^0.5.27",
+    "mysql": "^2.17.1",
+    "node-rsa": "^1.0.5",
+    "nodemon": "^2.0.3",
+    "portscanner": "^2.2.0",
+    "sqlstring": "^2.3.1",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "pstree.remy": "^1.1.0"
+  }
+}
