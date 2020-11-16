@@ -59,6 +59,34 @@ config.post("/config_service/API/getRFIDconfig", (req, res) => {
             }
         })
 })
+
+config.post("/config_service/API/getESP32Intervall", (req, res) => {
+    logger.verbose(req.hostname +  req.url + " erfolgreich aufgerufen");
+    logger.verbose(req.hostname +  req.url + " %o" , req.body );
+        //GET Credentials
+        const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
+        logger.debug(userid);
+        //define SQL Query
+        const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
+        logger.debug(req.hostname +  req.url +" "+  queryString)
+
+        getConnection().query(queryString, (err, rows, fields) =>{
+            if(err){
+                //throw error if not successful
+                logger.error(req.hostname +  req.url + " Intervall cannot be loaded! Error: " + err)
+                res.sendStatus(500);
+                return;
+            }else{
+                logger.info(req.hostname +  req.url + " intervall sent to Client ID: " + userid);
+                logger.debug("Got Data: %o", rows);
+                logger.debug("Got Rows: %o", rows.length);
+                //res.json(rows)
+                res.status(200).send(rows);
+            }
+        })
+})
+
+
 //stellt die Verbindung zur Datenbank über den Connection-Pool her
 function getConnection(){return pool}
 
