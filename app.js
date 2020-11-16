@@ -25,7 +25,7 @@ app.get('', (req, res) => { //aws healthcheck
 });
 
 //Change Log-Level ----------------------
-app.get('/config/logging/:newloglevel', (req, res) => {
+app.get('/config_service/config/logging/:newloglevel', (req, res) => {
   if(req.params.newloglevel=="silly"||req.params.newloglevel=="debug"||req.params.newloglevel=="verbose"||req.params.newloglevel=="info"||req.params.newloglevel=="warn"||req.params.newloglevel=="error"){
     logger.transports[0].level=req.params.newloglevel
     console.log("logging changed to " + req.params.newloglevel);

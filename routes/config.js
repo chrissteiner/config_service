@@ -22,7 +22,7 @@ vOption = {
 // var fs = require('fs');
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
 
-config.get("/API/healthcheck", (req, res) => {
+config.get("/config_service/API/healthcheck", (req, res) => {
     logger.verbose(req.hostname +  req.url + " erfolgreich aufgerufen");
 
     logger.verbose(req.hostname +  req.url + " Database health = " + Server_defines.database_health);
@@ -34,7 +34,7 @@ config.get("/API/healthcheck", (req, res) => {
     }
 })
 
-config.post("/API/getRFIDconfig", (req, res) => {
+config.post("/config_service/API/getRFIDconfig", (req, res) => {
     logger.verbose(req.hostname +  req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname +  req.url + " %o" , req.body );
         //GET Credentials
