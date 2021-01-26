@@ -1,8 +1,8 @@
 {
-  "name": "statistic_service",
-  "version": "1.6.0",
-  "description": "Statistik Service",
-  "main": "app.js",
+  "name": "config_service",
+  "version": "1.0",
+  "description": "config_service",
+  "main": "config_service.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
