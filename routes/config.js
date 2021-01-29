@@ -79,10 +79,12 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => {
                 return;
             } else {
                 logger.info(req.hostname + req.url + " intervall sent to Client ID: " + userid);
-                logger.debug("Got Data: %o", rows);
+                logger.debug("Got Data: %o", rows[0]);
+                // var normalObj = rows.assign({}, results[0]);
+                // console.log(normalObj)
                 logger.debug("Got Rows: %o", rows.length);
                 //res.json(rows)
-                res.status(200).send(rows);
+                res.status(200).send(rows[0]);
             }
         })
     } else {
