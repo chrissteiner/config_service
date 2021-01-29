@@ -67,7 +67,6 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => {
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
     
     if (userid != undefined) {
-        logger.debug(userid);
         //define SQL Query
         const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
         logger.debug(req.hostname + req.url + " " + queryString)
