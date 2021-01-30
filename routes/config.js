@@ -131,9 +131,9 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
     // logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-    const aussenlicht_timeout = parseInt(req.body.aussenlicht_timeout)
-    const doorOpen = parseInt(req.body.doorOpen);
-    const temp_intervall = parseInt(req.body.temp_intervall);
+    const aussenlicht_timeout = parseInt(req.body.config_PIR_timeout_sek)
+    const doorOpen = parseInt(req.body.doorOpenTime_sek);
+    const temp_intervall = parseInt(req.body.config_Temp_Intervall_sek);
     const temp_hysterese = parseInt(req.body.temp_hysterese);
 
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
@@ -156,6 +156,7 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
             }
         })
     } else {
+        logger.error("Die Parameter liegen in keiner gültigen Form vor! -- Abbruch")
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
     }
