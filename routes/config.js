@@ -93,7 +93,7 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     }
 })
 
-config.post("/config_service/API/getESP32Intervall", (req, res) => {
+config.post("/config_service/API/getESP32Intervall", (req, res) => { //niemals ändern!! die arduinos erwarten genau diese response wie hier definiert
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
