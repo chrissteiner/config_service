@@ -3,7 +3,6 @@ const express =       require('express')
 const app =           express()
 var portscanner =     require('portscanner');
 const database_credits = require('./_individuals/database');
-var SqlString =       require('sqlstring');
 const bodyParser =    require('body-parser')
 app.use(bodyParser.urlencoded({extended: false}))
 const Server_defines = require('./_individuals/API_defines')

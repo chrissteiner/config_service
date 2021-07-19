@@ -1,7 +1,6 @@
 //all user routes oder user related routes
 const express = require('express')
 const config = express.Router()
-var SqlString = require('sqlstring');
 const database_credits = require('../_individuals/database');
 const helper = require('../_config/helpers')
 const jwt = require('../_config/jwt_service');
