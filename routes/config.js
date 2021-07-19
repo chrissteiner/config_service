@@ -5,12 +5,25 @@ var SqlString = require('sqlstring');
 const database_credits = require('../_individuals/database');
 const helper = require('../_config/helpers')
 const jwt = require('../_config/jwt_service');
-const mysql = require('mysql')
+
 const Server_defines = require('../_individuals/API_defines')
 const bodyParser = require("body-parser");
 config.use(bodyParser.urlencoded({ extended: true }));
 config.use(bodyParser.json());
 var vOption;
+//Database
+const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
+
+const client = new MongoClient(database_credits.mongodb.connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect(function (err, db) {
+    if (err) { Server_defines.database_health = false; throw err; }
+    else {
+        database = db.db(database_credits.mongodb.database)
+        Server_defines.database_health = true;
+        logger.info("MongoDB is Connected")
+    }
+})
 //Initialize Logging
 const logger = require("../_config/logging_defines");
 vOption = {
@@ -37,6 +50,8 @@ config.get("/config_service/API/healthcheck", (req, res) => {
 config.post("/config_service/API/getRFIDconfig", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
+    res.status(501).send("Endpoint was moved - implementation waiting");
+    return;
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
 
@@ -63,9 +78,11 @@ config.post("/config_service/API/getRFIDconfig", (req, res) => {
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
+    res.status(501).send("Endpoint was moved - use v3");
+    return;
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-    
+
     if (userid != undefined) {
         //define SQL Query
         const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
@@ -93,12 +110,36 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     }
 })
 
-config.post("/config_service/API/getESP32Intervall", (req, res) => { //niemals ändern!! die arduinos erwarten genau diese response wie hier definiert
+config.post("/config_service/API/v3/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-    
+
+    if (userid != undefined) {
+        //define MongoDB Query
+        (async function() {
+            console.log("hoden" + userid);
+            const myquery = { userID: userid };
+            const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
+            console.log(cursor);
+            res.status(200).send(cursor);
+        }(userid));
+
+    } else {
+        res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
+        return;
+    }
+})
+
+config.post("/config_service/API/getESP32Intervall", (req, res) => { //niemals ändern!! die arduinos erwarten genau diese response wie hier definiert
+    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.verbose(req.hostname + req.url + " %o", req.body);
+    res.status(501).send("Endpoint was moved - use v3");
+    return;
+    //GET Credentials
+    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
+
     if (userid != undefined) {
         //define SQL Query
         const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
@@ -128,6 +169,8 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => { //niemals �
 
 config.post("/config_service/API/setESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    res.status(501).send("Endpoint was moved - implementation waiting");
+    return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
@@ -167,6 +210,6 @@ function getConnection() { return pool }
 
 //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
 //die Konfiguration dieser Variablen ist in /Individuals/database.js
-const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
+// const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
 
 module.exports = config

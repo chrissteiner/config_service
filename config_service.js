@@ -3,7 +3,6 @@ const express =       require('express')
 const app =           express()
 var portscanner =     require('portscanner');
 const database_credits = require('./_individuals/database');
-const mysql =         require('mysql')
 var SqlString =       require('sqlstring');
 const bodyParser =    require('body-parser')
 app.use(bodyParser.urlencoded({extended: false}))
@@ -18,6 +17,7 @@ app.use(function(req, res, next) {
   // res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
   // der Header Type "Authorization" wird für Angular benötigt, damit der Bearer mitgesendet werden darf. Ob ich die anderen benötige weiß ich nicht. Kommt von Google und sollte mal geprüft werden
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  if(Server_defines.database_health == false){res.status(425).send("Request came too early, startup running"); logger.info("Request came too early, startup running"); return;}
   next();
 });
 
@@ -54,7 +54,7 @@ require("fs").readdirSync(normalizedPath).forEach(function(file) {
 });
 logger.info(helper.getServiceName() + " starting. . .")
 logger.info("Print Server configuration: %o", Server_defines)
-logger.info("Print Database configuration: %o", database_credits.database_credits.host)
+logger.info("Print Database configuration: %o", database_credits.mongodb.database, database_credits.mongodb.connectionString)
 
 //define Port_range for service
 var port_range= [];
@@ -75,43 +75,43 @@ portscanner.findAPortNotInUse(port_range, Server_defines.Server_address).then(po
 
 // ESTABLISH DATABASE CONNECTION
 //stellt die Verbindung zur Datenbank über den Connection-Pool her
-function getConnection(){return pool}
-//Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
-//die Konfiguration dieser Variablen ist in /Individuals/database.js
-const pool = mysql.createPool({connectionLimit: database_credits.database_credits.connectionLimit,host: database_credits.database_credits.host,user: database_credits.database_credits.user,database: database_credits.database_credits.database,password: database_credits.database_credits.password,port: database_credits.database_credits.port})
-const queryString = SqlString.format("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '"+database_credits.database_credits.database+"'");
-logger.silly(queryString);
-healthcheck(1);
-function healthcheck(initrun) {
-    var health_old = Server_defines.database_health;
-    getConnection().query(queryString, (err, rows, fields) =>{
-    if(err){
-      if (err) {
-        if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-          // logger.error('Database connection was closed.') //Die mysql Fehlermeldung ist fast ident
-          logger.error(err)
-        }else if (err.code === 'ER_CON_COUNT_ERROR') {
-          logger.error('Database has too many connections.')
-          logger.error(err)
-        } else if (err.code === 'ECONNREFUSED') {
-          // logger.error('Database connection was refused.') //Die mysql Fehlermeldung ist fast ident
-          logger.error(err)
-        }else {
-          logger.error(err)
-        }
-      }
-      //SET Healtcheck var
-      Server_defines.database_health = false;
-    }else{
-      logger.silly(" Database connection established");
-      //SET Healtcheck var
-      Server_defines.database_health = true;
-    }
-    if(health_old!=Server_defines.database_health && Server_defines.database_health==true&&initrun){
-      logger.info(" Database connection ist UP again!");
-    }else if(health_old!=Server_defines.database_health && Server_defines.database_health==false){
-      logger.error(" We lost the Database connection suddenly!!");
-    }
-  })
-}
-setInterval(healthcheck,10000); //every 3 seconds (3000 milliseconds)
+// function getConnection(){return pool}
+// //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
+// //die Konfiguration dieser Variablen ist in /Individuals/database.js
+// const pool = mysql.createPool({connectionLimit: database_credits.database_credits.connectionLimit,host: database_credits.database_credits.host,user: database_credits.database_credits.user,database: database_credits.database_credits.database,password: database_credits.database_credits.password,port: database_credits.database_credits.port})
+// const queryString = SqlString.format("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '"+database_credits.database_credits.database+"'");
+// logger.silly(queryString);
+// healthcheck(1);
+// function healthcheck(initrun) {
+//     var health_old = Server_defines.database_health;
+//     getConnection().query(queryString, (err, rows, fields) =>{
+//     if(err){
+//       if (err) {
+//         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+//           // logger.error('Database connection was closed.') //Die mysql Fehlermeldung ist fast ident
+//           logger.error(err)
+//         }else if (err.code === 'ER_CON_COUNT_ERROR') {
+//           logger.error('Database has too many connections.')
+//           logger.error(err)
+//         } else if (err.code === 'ECONNREFUSED') {
+//           // logger.error('Database connection was refused.') //Die mysql Fehlermeldung ist fast ident
+//           logger.error(err)
+//         }else {
+//           logger.error(err)
+//         }
+//       }
+//       //SET Healtcheck var
+//       Server_defines.database_health = false;
+//     }else{
+//       logger.silly(" Database connection established");
+//       //SET Healtcheck var
+//       Server_defines.database_health = true;
+//     }
+//     if(health_old!=Server_defines.database_health && Server_defines.database_health==true&&initrun){
+//       logger.info(" Database connection ist UP again!");
+//     }else if(health_old!=Server_defines.database_health && Server_defines.database_health==false){
+//       logger.error(" We lost the Database connection suddenly!!");
+//     }
+//   })
+// }
+// setInterval(healthcheck,10000); //every 3 seconds (3000 milliseconds)
