@@ -131,35 +131,22 @@ config.post("/config_service/API/v3/getESP32Intervall", (req, res) => {
     }
 })
 
-config.post("/config_service/API/getESP32Intervall", (req, res) => { //niemals ändern!! die arduinos erwarten genau diese response wie hier definiert
+config.post("/config_service/API/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
-    res.status(501).send("Endpoint was moved - use v3");
-    return;
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
 
     if (userid != undefined) {
-        //define SQL Query
-        const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
-        logger.debug(req.hostname + req.url + " " + queryString)
+        //define MongoDB Query
+        (async function() {
+            console.log("hoden" + userid);
+            const myquery = { userID: userid };
+            const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
+            console.log(cursor);
+            res.status(200).send(cursor);
+        }(userid));
 
-        getConnection().query(queryString, (err, rows, fields) => {
-            if (err) {
-                //throw error if not successful
-                logger.error(req.hostname + req.url + " Intervall cannot be loaded! Error: " + err)
-                res.sendStatus(500);
-                return;
-            } else {
-                logger.info(req.hostname + req.url + " intervall sent to Client ID: " + userid);
-                logger.debug("Got Data: %o", rows[0]);
-                // var normalObj = rows.assign({}, results[0]);
-                // console.log(normalObj)
-                logger.debug("Got Rows: %o", rows.length);
-                //res.json(rows)
-                res.status(200).send(rows);
-            }
-        })
     } else {
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
