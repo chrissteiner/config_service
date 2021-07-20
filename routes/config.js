@@ -1,10 +1,11 @@
 //all user routes oder user related routes
 const express = require('express')
 const config = express.Router()
+var SqlString = require('sqlstring');
 const database_credits = require('../_individuals/database');
 const helper = require('../_config/helpers')
 const jwt = require('../_config/jwt_service');
-
+const mysql = require('mysql')
 const Server_defines = require('../_individuals/API_defines')
 const bodyParser = require("body-parser");
 config.use(bodyParser.urlencoded({ extended: true }));
@@ -164,6 +165,6 @@ function getConnection() { return pool }
 
 //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
 //die Konfiguration dieser Variablen ist in /Individuals/database.js
-// const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
+const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
 
 module.exports = config
