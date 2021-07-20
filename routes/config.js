@@ -80,7 +80,7 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-
+    logger.info("userID is: " + userid);
     if (userid != undefined) {
         //define MongoDB Query
         (async function () {
@@ -91,6 +91,7 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
         }(userid));
 
     } else {
+        logger.info("Die Parameter liegen in keiner gültigen Form vor!");
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
     }
