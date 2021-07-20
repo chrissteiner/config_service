@@ -79,14 +79,14 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
-    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-    logger.info("userID is: " + userid);
+    const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
     if (userid != undefined) {
         //define MongoDB Query
         (async function () {
+            logger.info("userID is: " + userid);
             const myquery = { userID: userid };
             const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
-            console.log(cursor);
+            logger.info("%o", cursor);
             res.status(200).send(cursor);
         }(userid));
 
