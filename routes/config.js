@@ -49,8 +49,8 @@ config.get("/config_service/API/healthcheck", (req, res) => {
 config.post("/config_service/API/getRFIDconfig", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
-    res.status(501).send("Endpoint was moved - implementation waiting");
-    return;
+    // res.status(501).send("Endpoint was moved - implementation waiting");
+    // return;
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
 
