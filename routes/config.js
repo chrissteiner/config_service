@@ -77,48 +77,12 @@ config.post("/config_service/API/getRFIDconfig", (req, res) => {
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
-    res.status(501).send("Endpoint was moved - use v3");
-    return;
-    //GET Credentials
-    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-
-    if (userid != undefined) {
-        //define SQL Query
-        const queryString = SqlString.format("SELECT config_PIR_timeout_sek, doorOpenTime_sek, config_Temp_Intervall_sek, temp_hysterese FROM t_ESP32_intervall WHERE userID =" + userid);
-        logger.debug(req.hostname + req.url + " " + queryString)
-
-        getConnection().query(queryString, (err, rows, fields) => {
-            if (err) {
-                //throw error if not successful
-                logger.error(req.hostname + req.url + " Intervall cannot be loaded! Error: " + err)
-                res.sendStatus(500);
-                return;
-            } else {
-                logger.info(req.hostname + req.url + " intervall sent to Client ID: " + userid);
-                logger.debug("Got Data: %o", rows[0]);
-                // var normalObj = rows.assign({}, results[0]);
-                // console.log(normalObj)
-                logger.debug("Got Rows: %o", rows.length);
-                //res.json(rows)
-                res.status(200).send(rows[0]);
-            }
-        })
-    } else {
-        res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
-        return;
-    }
-})
-
-config.post("/config_service/API/v3/getESP32Intervall", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
-    logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
 
     if (userid != undefined) {
         //define MongoDB Query
-        (async function() {
-            console.log("hoden" + userid);
+        (async function () {
             const myquery = { userID: userid };
             const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
             console.log(cursor);
@@ -139,12 +103,13 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => {
 
     if (userid != undefined) {
         //define MongoDB Query
-        (async function() {
-            console.log("hoden" + userid);
+        (async function () {
             const myquery = { userID: userid };
             const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
             console.log(cursor);
-            res.status(200).send(cursor);
+            let tempArray = [];
+            tempArray.push(cursor)
+            res.status(200).send(tempArray);
         }(userid));
 
     } else {
@@ -155,8 +120,8 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => {
 
 config.post("/config_service/API/setESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
-    res.status(501).send("Endpoint was moved - implementation waiting");
-    return;
+    // res.status(501).send("Endpoint was moved - implementation waiting");
+    // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
@@ -166,24 +131,27 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
     const temp_hysterese = parseInt(req.body.temp_hysterese);
 
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
-        //define SQL Query
-        const queryString = SqlString.format("Update t_ESP32_intervall SET config_PIR_timeout_sek= " + aussenlicht_timeout + ", doorOpenTime_sek= " + doorOpen + ", config_Temp_Intervall_sek= " + temp_intervall + ", temp_hysterese=" + temp_hysterese + " WHERE userID =" + userid);
-        logger.debug(req.hostname + req.url + " " + queryString)
+        try {
+            (async function () {
+                const newDocument = JSON.parse({
+                    config_PIR_timeout_sek: aussenlicht_timeout,
+                    doorOpenTime_sek: doorOpen,
+                    config_Temp_Intervall_sek: temp_intervall,
+                    temp_hysterese: temp_hysterese,
 
-        getConnection().query(queryString, (err, rows, fields) => {
-            if (err) {
-                //throw error if not successful
-                logger.error(req.hostname + req.url + " Data could not be inserted! Error: " + err)
-                res.sendStatus(500);
-                return;
-            } else {
-                logger.info(req.hostname + req.url + " Data Interted: " + userid);
-                logger.debug("Got Data: %o", rows);
-                //res.json(rows)
-                res.status(200).send(rows);
-                return;
-            }
-        })
+                });
+                const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
+                console.log(result.ops)
+                return result.ops;
+                //define SQL Query
+                // const queryString = SqlString.format("Update t_ESP32_intervall SET config_PIR_timeout_sek= " + aussenlicht_timeout + ", doorOpenTime_sek= " + doorOpen + ", config_Temp_Intervall_sek= " + temp_intervall + ", temp_hysterese=" + temp_hysterese + " WHERE userID =" + userid);
+                // logger.debug(req.hostname + req.url + " " + queryString)
+            }(userid));
+        }
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + "catched error500 (API didn´t break) -> %o", e);
+        }
+
     } else {
         logger.error("Die Parameter liegen in keiner gültigen Form vor! -- Abbruch")
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
