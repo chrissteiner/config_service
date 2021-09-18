@@ -162,10 +162,10 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
 })
 
 //stellt die Verbindung zur Datenbank über den Connection-Pool her
-// function getConnection() { return pool }
+function getConnection() { return pool }
 
 //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
 //die Konfiguration dieser Variablen ist in /Individuals/database.js
-// const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
+const pool = mysql.createPool({ connectionLimit: database_credits.database_credits.connectionLimit, host: database_credits.database_credits.host, user: database_credits.database_credits.user, database: database_credits.database_credits.database, password: database_credits.database_credits.password })
 
 module.exports = config
