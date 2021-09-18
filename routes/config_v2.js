@@ -35,7 +35,7 @@ vOption = {
 // var fs = require('fs');
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
 
-config.get("/config_service/API/healthcheck", (req, res) => {
+config.get("/config_service/API/v2/healthcheck", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
 
     logger.verbose(req.hostname + req.url + " Database health = " + Server_defines.database_health);
@@ -47,7 +47,7 @@ config.get("/config_service/API/healthcheck", (req, res) => {
     }
 })
 
-config.post("/config_service/API/getRFIDconfig", (req, res) => {
+config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     // res.status(501).send("Endpoint was moved - implementation waiting");
@@ -75,30 +75,29 @@ config.post("/config_service/API/getRFIDconfig", (req, res) => {
     })
 })
 
-config.post("/config_service/API/getESP32Intervall", (req, res) => {
+config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
-    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
-
+    const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
     if (userid != undefined) {
         //define MongoDB Query
         (async function () {
+            logger.info("userID is: " + userid);
             const myquery = { userID: userid };
             const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
-            console.log(cursor);
-            let tempArray = [];
-            tempArray.push(cursor)
-            res.status(200).send(tempArray);
+            logger.info("%o", cursor);
+            res.status(200).send(cursor);
         }(userid));
 
     } else {
+        logger.info("Die Parameter liegen in keiner gültigen Form vor!");
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
     }
 })
 
-config.post("/config_service/API/setESP32Intervall", (req, res) => {
+config.post("/config_service/API/v2/setESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
