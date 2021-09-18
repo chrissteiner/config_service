@@ -125,6 +125,7 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
+    logger.debug("%o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
     const aussenlicht_timeout = parseInt(req.body.config_PIR_timeout_sek)
@@ -135,19 +136,18 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
         try {
             (async function () {
-                const newDocument = JSON.parse({
+                const newDocument = {
                     config_PIR_timeout_sek: aussenlicht_timeout,
                     doorOpenTime_sek: doorOpen,
                     config_Temp_Intervall_sek: temp_intervall,
                     temp_hysterese: temp_hysterese,
 
-                });
+                };
+                logger.debug("%o", newDocument);
                 const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
-                console.log(result.ops)
-                return result.ops;
-                //define SQL Query
-                // const queryString = SqlString.format("Update t_ESP32_intervall SET config_PIR_timeout_sek= " + aussenlicht_timeout + ", doorOpenTime_sek= " + doorOpen + ", config_Temp_Intervall_sek= " + temp_intervall + ", temp_hysterese=" + temp_hysterese + " WHERE userID =" + userid);
-                // logger.debug(req.hostname + req.url + " " + queryString)
+                console.log(cursor)
+                res.status(200).send(cursor);
+                return;
             }(userid));
         }
         catch (e) {
