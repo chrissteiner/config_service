@@ -175,7 +175,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
                 res.sendStatus(500);
                 return;
             } else {
-                logger.info(req.hostname + req.url + " Card deleted: " + rfid_uid);
+                logger.info(req.hostname + req.url + " Card deleted: " + row_id);
                 logger.debug("Got Data: %o", rows);
                 logger.debug("Got Rows: %o", rows.length);
                 //res.json(rows)
