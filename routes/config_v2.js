@@ -165,7 +165,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
     const row_id = parseInt(req.query.row_id); //const user_email = 'chris_steiner@me.com';
     if (row_id != undefined) {
         //define MongoDB Query
-        const queryString = SqlString.format("DELTE FROM t_RFID_config where id ="+ row_id +";");
+        const queryString = SqlString.format("DELETE FROM t_RFID_config where id ="+ row_id +";");
         logger.debug(req.hostname + req.url + " " + queryString)
 
         getConnection().query(queryString, (err, rows, fields) => {
