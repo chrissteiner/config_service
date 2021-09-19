@@ -132,7 +132,7 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
     const benutzername = req.body.benutzername.toString(); //const user_email = 'chris_steiner@me.com';
     const rfid_uid = req.body.rfid_UID.toString(); //const user_email = 'chris_steiner@me.com';
     const aws_id = req.body.aws_id.toString(); //const user_email = 'chris_steiner@me.com';
-    if (benutzername != undefined && rfid_uid != undefined && aws_id != undefined) {
+    if (benutzername != '' && rfid_uid != undefined && aws_id != undefined) {
         //define MongoDB Query
         const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES("+ benutzername + ","+ rfid_uid +","+ aws_id +");");
         logger.debug(req.hostname + req.url + " " + queryString)
@@ -158,14 +158,14 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
     }
 })
 
-config.post("/config_service/API/v2/deleteRFIDCard", (req, res) => {
+config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.query);
     //GET Credentials
-    const rfid_uid = req.query.rfid_UID.toString(); //const user_email = 'chris_steiner@me.com';
-    if (rfid_uid != undefined) {
+    const row_id = parseint(req.query.row_id); //const user_email = 'chris_steiner@me.com';
+    if (row_id != undefined) {
         //define MongoDB Query
-        const queryString = SqlString.format("DELTE FROM t_RFID_config where rfid_uid ="+ rfid_uid +";");
+        const queryString = SqlString.format("DELTE FROM t_RFID_config where id ="+ row_id +";");
         logger.debug(req.hostname + req.url + " " + queryString)
 
         getConnection().query(queryString, (err, rows, fields) => {
