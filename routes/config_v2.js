@@ -75,6 +75,34 @@ config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
     })
 })
 
+config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
+    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.verbose(req.hostname + req.url + " %o", req.body);
+    // res.status(501).send("Endpoint was moved - implementation waiting");
+    // return;
+    //GET Credentials
+    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
+
+    //define SQL Query
+    const queryString = SqlString.format("SELECT * FROM t_RFID_config WHERE aws_id ="+ userid + ";");
+    logger.debug(req.hostname + req.url + " " + queryString)
+
+    getConnection().query(queryString, (err, rows, fields) => {
+        if (err) {
+            //throw error if not successful
+            logger.error(req.hostname + req.url + " Config cannot be loaded! Error: " + err)
+            res.sendStatus(500);
+            return;
+        } else {
+            logger.info(req.hostname + req.url + " Config sent to Client with hex_id: " + userid);
+            logger.debug("Got Data: %o", rows);
+            logger.debug("Got Rows: %o", rows.length);
+            //res.json(rows)
+            res.status(200).send(rows);
+        }
+    })
+})
+
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
