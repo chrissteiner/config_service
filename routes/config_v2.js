@@ -84,7 +84,7 @@ config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
     const userid = req.query.userid; //const user_email = 'chris_steiner@me.com';
 
     //define SQL Query
-    const queryString = SqlString.format("SELECT * FROM t_RFID_config WHERE aws_id ="+ userid + ";");
+    const queryString = SqlString.format("SELECT * FROM t_RFID_config WHERE aws_id =" + userid + ";");
     logger.debug(req.hostname + req.url + " " + queryString)
 
     getConnection().query(queryString, (err, rows, fields) => {
@@ -122,6 +122,70 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
         logger.info("Die Parameter liegen in keiner gültigen Form vor!");
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
+    }
+})
+
+config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
+    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.verbose(req.hostname + req.url + " %o", req.body);
+    //GET Credentials
+    const benutzername = req.body.benutzername.toString(); //const user_email = 'chris_steiner@me.com';
+    const rfid_uid = req.body.rfid_UID.toString(); //const user_email = 'chris_steiner@me.com';
+    const aws_id = req.body.aws_id.toString(); //const user_email = 'chris_steiner@me.com';
+    if (benutzername != undefined && rfid_uid != undefined && aws_id != undefined) {
+        //define MongoDB Query
+        const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES("+ benutzername + ","+ rfid_uid +","+ aws_id +");");
+        logger.debug(req.hostname + req.url + " " + queryString)
+
+        getConnection().query(queryString, (err, rows, fields) => {
+            if (err) {
+                //throw error if not successful
+                logger.error(req.hostname + req.url + " Insert cannot be done! Error: " + err)
+                res.sendStatus(500);
+                return;
+            } else {
+                logger.info(req.hostname + req.url + " New Card created: " + rfid_uid);
+                logger.debug("Got Data: %o", rows);
+                logger.debug("Got Rows: %o", rows.length);
+                //res.json(rows)
+                res.status(200).send(rows);
+            }
+        })
+
+    }else{
+        res.status(500).send("Die Daten liegen in keiner gültigen Form vor");
+        logger.error("Die Daten liegen in keiner gültigen Form vor");
+    }
+})
+
+config.post("/config_service/API/v2/deleteRFIDCard", (req, res) => {
+    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.verbose(req.hostname + req.url + " %o", req.query);
+    //GET Credentials
+    const rfid_uid = req.query.rfid_UID.toString(); //const user_email = 'chris_steiner@me.com';
+    if (rfid_uid != undefined) {
+        //define MongoDB Query
+        const queryString = SqlString.format("DELTE FROM t_RFID_config where rfid_uid ="+ rfid_uid +";");
+        logger.debug(req.hostname + req.url + " " + queryString)
+
+        getConnection().query(queryString, (err, rows, fields) => {
+            if (err) {
+                //throw error if not successful
+                logger.error(req.hostname + req.url + " Delete cannot be done! Error: " + err)
+                res.sendStatus(500);
+                return;
+            } else {
+                logger.info(req.hostname + req.url + " Card deleted: " + rfid_uid);
+                logger.debug("Got Data: %o", rows);
+                logger.debug("Got Rows: %o", rows.length);
+                //res.json(rows)
+                res.status(200).send(rows);
+            }
+        })
+
+    }else{
+        res.status(500).send("Card ID liegt in keiner gültigen Form vor");
+        logger.error("Card ID liegt in keiner gültigen Form vor");
     }
 })
 
