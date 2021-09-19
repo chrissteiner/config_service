@@ -134,7 +134,7 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
     const aws_id = req.body.aws_id.toString(); //const user_email = 'chris_steiner@me.com';
     if (benutzername != '' && rfid_uid != undefined && aws_id != undefined) {
 
-        const queryString = SqlString.format("Select * FROM t_RFID_config WHERE rfid_uid = " + rfid_uid + ";");
+        const queryString = SqlString.format("Select * FROM t_RFID_config WHERE rfid_uid = '" + rfid_uid + "';");
         logger.debug(req.hostname + req.url + " " + queryString)
 
         getConnection().query(queryString, (err, rows, fields) => {
