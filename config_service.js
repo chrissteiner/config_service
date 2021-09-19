@@ -15,8 +15,8 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
   // res.header("Access-Control-Allow-Origin", "http://localhost:4200"); // update to match the domain you will make the request from
   // der Header Type "Authorization" wird für Angular benötigt, damit der Bearer mitgesendet werden darf. Ob ich die anderen benötige weiß ich nicht. Kommt von Google und sollte mal geprüft werden
+  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE');
   if(Server_defines.database_health == false){res.status(425).send("Request came too early, startup running"); logger.info("Request came too early, startup running"); return;}
   next();
 });
