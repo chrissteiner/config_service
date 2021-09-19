@@ -104,7 +104,7 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
     // logger.verbose(req.hostname + req.url + " %o", req.body);
     logger.debug("%o", req.body);
     //GET Credentials
-    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
+    const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
     const aussenlicht_timeout = parseInt(req.body.config_PIR_timeout_sek)
     const doorOpen = parseInt(req.body.doorOpenTime_sek);
     const temp_intervall = parseInt(req.body.config_Temp_Intervall_sek);
