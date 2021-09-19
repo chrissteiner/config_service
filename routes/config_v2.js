@@ -77,11 +77,11 @@ config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
 
 config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
-    logger.verbose(req.hostname + req.url + " %o", req.body);
+    logger.verbose(req.hostname + req.url + " %o", req.query);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     //GET Credentials
-    const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
+    const userid = req.query.userid; //const user_email = 'chris_steiner@me.com';
 
     //define SQL Query
     const queryString = SqlString.format("SELECT * FROM t_RFID_config WHERE aws_id ="+ userid + ";");
