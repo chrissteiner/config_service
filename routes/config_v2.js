@@ -134,7 +134,7 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
     const aws_id = req.body.aws_id.toString(); //const user_email = 'chris_steiner@me.com';
     if (benutzername != '' && rfid_uid != undefined && aws_id != undefined) {
         //define MongoDB Query
-        const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES("+ benutzername + ","+ rfid_uid +","+ aws_id +");");
+        const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES('"+ benutzername + "',"+ rfid_uid +","+ aws_id +");");
         logger.debug(req.hostname + req.url + " " + queryString)
 
         getConnection().query(queryString, (err, rows, fields) => {
