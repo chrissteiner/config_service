@@ -97,7 +97,7 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     }
 })
 
-config.post("/config_service/API/v2/setESP32Intervall", (req, res) => {
+config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
     logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
