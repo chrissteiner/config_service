@@ -36,11 +36,12 @@ vOption = {
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
 
 config.get("/config_service/API/healthcheck", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
 
     logger.verbose(req.hostname + req.url + " Database health = " + Server_defines.database_health);
     if (Server_defines.database_health == true) {
-        res.status(200).send(true)
+        res.status(200).send(true);
+        logger.http(req.hostname + req.url + " Request successful");
     } else {
         // Server_defines.database_health
         res.status(503).send(false)
@@ -48,7 +49,7 @@ config.get("/config_service/API/healthcheck", (req, res) => {
 })
 
 config.post("/config_service/API/getRFIDconfig", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
@@ -71,12 +72,13 @@ config.post("/config_service/API/getRFIDconfig", (req, res) => {
             logger.debug("Got Rows: %o", rows.length);
             //res.json(rows)
             res.status(200).send(rows);
+            logger.http(req.hostname + req.url + " Request successful");
         }
     })
 })
 
 config.post("/config_service/API/getESP32Intervall", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid; //const user_email = 'chris_steiner@me.com';
@@ -90,16 +92,18 @@ config.post("/config_service/API/getESP32Intervall", (req, res) => {
             let tempArray = [];
             tempArray.push(cursor)
             res.status(200).send(tempArray);
+            logger.http(req.hostname + req.url + " Request successful");
         }(userid));
 
     } else {
+        logger.error("Die Parameter liegen in keiner gültigen Form vor! -- Abbruch")
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
         return;
     }
 })
 
 config.post("/config_service/API/setESP32Intervall", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
@@ -123,8 +127,9 @@ config.post("/config_service/API/setESP32Intervall", (req, res) => {
                 };
                 logger.debug("%o", newDocument);
                 const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
-                console.log(cursor)
+                logger.debug("%o", cursor);
                 res.status(200).send(cursor);
+                logger.http(req.hostname + req.url + " Request successful");
                 return;
             }(userid));
         }

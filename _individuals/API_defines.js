@@ -12,7 +12,7 @@ module.exports = {
      ==================== Loggin defines =====================
     */
     Console_loglevel:  {
-        level:'debug'        
+        level:'http'        
     },
     timezone: 'Europe/Vienna',
 

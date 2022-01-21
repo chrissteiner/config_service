@@ -36,11 +36,12 @@ vOption = {
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
 
 config.get("/config_service/API/v2/healthcheck", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
 
     logger.verbose(req.hostname + req.url + " Database health = " + Server_defines.database_health);
     if (Server_defines.database_health == true) {
         res.status(200).send(true)
+        logger.http(req.hostname + req.url + " Request successful");
     } else {
         // Server_defines.database_health
         res.status(503).send(false)
@@ -48,7 +49,7 @@ config.get("/config_service/API/v2/healthcheck", (req, res) => {
 })
 
 config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
@@ -71,12 +72,13 @@ config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
             logger.debug("Got Rows: %o", rows.length);
             //res.json(rows)
             res.status(200).send(rows);
+            logger.http(req.hostname + req.url + " Request successful");
         }
     })
 })
 
 config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.query);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
@@ -99,12 +101,13 @@ config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
             logger.debug("Got Rows: %o", rows.length);
             //res.json(rows)
             res.status(200).send(rows);
+            logger.http(req.hostname + req.url + " Request successful");
         }
     })
 })
 
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
@@ -114,8 +117,9 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
             logger.info("userID is: " + userid);
             const myquery = { userID: userid };
             const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
-            logger.info("%o", cursor);
+            logger.debug("%o", cursor);
             res.status(200).send(cursor);
+            logger.http(req.hostname + req.url + " Request successful");
         }(userid));
 
     } else {
@@ -126,7 +130,7 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
 })
 
 config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const benutzername = req.body.benutzername.toString(); //const user_email = 'chris_steiner@me.com';
@@ -164,6 +168,7 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
                             logger.debug("Got Rows: %o", rows.length);
                             //res.json(rows)
                             res.status(200).send(rows);
+                            logger.http(req.hostname + req.url + " Request successful");
                         }
                     })
                 }
@@ -177,7 +182,7 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
 })
 
 config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.query);
     //GET Credentials
     const row_id = parseInt(req.query.row_id); //const user_email = 'chris_steiner@me.com';
@@ -198,6 +203,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
                 logger.debug("Got Rows: %o", rows.length);
                 //res.json(rows)
                 res.status(200).send(rows);
+                logger.http(req.hostname + req.url + " Request successful");
             }
         })
 
@@ -208,7 +214,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
 })
 
 config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
-    logger.verbose(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
@@ -232,8 +238,9 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
                 };
                 logger.debug("%o", newDocument);
                 const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
-                console.log(cursor)
+                logger.debug("%o", cursor)
                 res.status(200).send(cursor);
+                logger.http(req.hostname + req.url + " Request successful");
                 return;
             }(userid));
         }
