@@ -108,7 +108,7 @@ config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
 
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
-    logger.verbose(req.hostname + req.url + " %o", req.body);
+    logger.debug(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
     if (userid != undefined) {
