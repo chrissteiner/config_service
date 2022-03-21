@@ -26,7 +26,7 @@ app.get('', (req, res) => { //aws healthcheck
 });
 
 //Change Log-Level ----------------------
-app.get('/config_service/config/logging/:newloglevel', (req, res) => {
+app.get('/config_service/logging/:newloglevel', (req, res) => {
   if(req.params.newloglevel=="silly"||req.params.newloglevel=="debug"||req.params.newloglevel=="verbose"||req.params.newloglevel=="info"||req.params.newloglevel=="warn"||req.params.newloglevel=="error"){
     logger.transports[0].level=req.params.newloglevel
     console.log("logging changed to " + req.params.newloglevel);
@@ -35,6 +35,11 @@ app.get('/config_service/config/logging/:newloglevel', (req, res) => {
     logger.error("Loglevel only can be: silly, debug, verbose, info, warn, error");
     res.status(500).send("Loglevel only can be: silly, debug, verbose, info, warn, error");
   }
+});
+
+app.get('/config_service/healthcheck', (req, res) => { //aws healthcheck
+  serivicename = helper.getServiceName()
+  res.status(200).send({'message':true, 'servicename' : servicename, 'comment': "Up and Running", 'supported_versions': Server_defines.supported_versions});
 });
 
 // GET servicename ----------------------
@@ -47,9 +52,11 @@ var normalizedPath = require("path").join(__dirname, "routes");
   // GET routes (best practise = 1 file in routes folder) ----------------------
 require("fs").readdirSync(normalizedPath).forEach(function(file) {
   var regex = /.js/g; //zeigt alle .js files an (wenn mehrere files im Ordner sind funktionieren alle!)
+  var regex_version = /[v][0-9]*/gm;
   if(file.match(regex)){ //nur wenn ein JS file im Ordner ist, wird das verwendet
     logger.verbose("File found: " + file) //filename
     app.use(require("./routes/" + file)); //Start Server with this file
+    Server_defines.supported_versions.push(file.match(regex_version)[0])
   }
 });
 logger.info(helper.getServiceName() + " starting. . .")
@@ -72,46 +79,26 @@ portscanner.findAPortNotInUse(port_range, Server_defines.Server_address).then(po
   })
 });
 
+healthy = 300;
+function System_health(){
+  if(
+    Server_defines.System_health.mongoDB_health == false ||
+    Server_defines.System_health.api_health == false
+    ){
+      Server_defines.System_health.ready_for_work = false;
+      if(healthy != 300){
+        healthy = 300;
+        clearInterval(health);
+        health = setInterval(System_health, healthy); //every 3 seconds (3000 milliseconds)
+      }
+    }else{
+      Server_defines.System_health.ready_for_work = true;
+      if(healthy != 5000){
+        healthy = 5000;
+        clearInterval(health);
+        health = setInterval(System_health, healthy); //every 3 seconds (3000 milliseconds)
+      }
+    }
+}
 
-// ESTABLISH DATABASE CONNECTION
-//stellt die Verbindung zur Datenbank über den Connection-Pool her
-// function getConnection(){return pool}
-// //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
-// //die Konfiguration dieser Variablen ist in /Individuals/database.js
-// const pool = mysql.createPool({connectionLimit: database_credits.database_credits.connectionLimit,host: database_credits.database_credits.host,user: database_credits.database_credits.user,database: database_credits.database_credits.database,password: database_credits.database_credits.password,port: database_credits.database_credits.port})
-// const queryString = SqlString.format("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = '"+database_credits.database_credits.database+"'");
-// logger.silly(queryString);
-// healthcheck(1);
-// function healthcheck(initrun) {
-//     var health_old = Server_defines.database_health;
-//     getConnection().query(queryString, (err, rows, fields) =>{
-//     if(err){
-//       if (err) {
-//         if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-//           // logger.error('Database connection was closed.') //Die mysql Fehlermeldung ist fast ident
-//           logger.error(err)
-//         }else if (err.code === 'ER_CON_COUNT_ERROR') {
-//           logger.error('Database has too many connections.')
-//           logger.error(err)
-//         } else if (err.code === 'ECONNREFUSED') {
-//           // logger.error('Database connection was refused.') //Die mysql Fehlermeldung ist fast ident
-//           logger.error(err)
-//         }else {
-//           logger.error(err)
-//         }
-//       }
-//       //SET Healtcheck var
-//       Server_defines.database_health = false;
-//     }else{
-//       logger.silly(" Database connection established");
-//       //SET Healtcheck var
-//       Server_defines.database_health = true;
-//     }
-//     if(health_old!=Server_defines.database_health && Server_defines.database_health==true&&initrun){
-//       logger.info(" Database connection ist UP again!");
-//     }else if(health_old!=Server_defines.database_health && Server_defines.database_health==false){
-//       logger.error(" We lost the Database connection suddenly!!");
-//     }
-//   })
-// }
-// setInterval(healthcheck,10000); //every 3 seconds (3000 milliseconds)
+var health = setInterval(System_health, healthy); //every 3 seconds (3000 milliseconds)
