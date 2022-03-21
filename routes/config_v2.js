@@ -1,31 +1,24 @@
 //all user routes oder user related routes
 const express = require('express')
 const config = express.Router()
-var SqlString = require('sqlstring');
 const database_credits = require('../_individuals/database');
 const helper = require('../_config/helpers')
-const jwt = require('../_config/jwt_service');
-const mysql = require('mysql')
-const Server_defines = require('../_individuals/API_defines')
 const bodyParser = require("body-parser");
+
+var SqlString = require('sqlstring');
+const mysql = require('mysql')
+
 config.use(bodyParser.urlencoded({ extended: true }));
 config.use(bodyParser.json());
+const Server_defines = require('../_individuals/API_defines')
 var vOption;
 //Database
-const MongoClient = require('mongodb').MongoClient;
-const ObjectID = require('mongodb').ObjectID;
+const db_Access = require("../services/mongo_db_controller.js")
+const mongo_db_service = new db_Access.dbController;
 
-const client = new MongoClient(database_credits.mongodb.connectionString, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(function (err, db) {
-    if (err) { Server_defines.database_health = false; throw err; }
-    else {
-        database = db.db(database_credits.mongodb.database)
-        Server_defines.database_health = true;
-        logger.info("MongoDB is Connected")
-    }
-})
 //Initialize Logging
 const logger = require("../_config/logging_defines");
+const { response } = require('express');
 vOption = {
     //These variables for JWT I have to put into verify to make sure the same user is calling
     issuer: "Authorizaxtion/Resource/This server",
@@ -34,19 +27,6 @@ vOption = {
 }
 // var fs = require('fs');
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
-
-config.get("/config_service/API/v2/healthcheck", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
-
-    logger.verbose(req.hostname + req.url + " Database health = " + Server_defines.database_health);
-    if (Server_defines.database_health == true) {
-        res.status(200).send(true)
-        logger.http(req.hostname + req.url + " Request successful");
-    } else {
-        // Server_defines.database_health
-        res.status(503).send(false)
-    }
-})
 
 config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
     logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
@@ -105,28 +85,71 @@ config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
         }
     })
 })
-
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
     logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.body);
     //GET Credentials
-    const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
-    if (userid != undefined) {
-        //define MongoDB Query
-        (async function () {
-            logger.info("userID is: " + userid);
-            const myquery = { userID: userid };
-            const cursor = await database.collection(database_credits.mongodb.collection_config).findOne(myquery);
-            logger.debug("%o", cursor);
-            res.status(200).send(cursor);
-            logger.http(req.hostname + req.url + " Request successful");
-        }(userid));
+    (async () => {
+        try {
+            //GET Credentials
+            const userid = req.body.userid.toString(); //const user_email = 'chris_steiner@me.com';
+            if (userid != undefined) {
+                //define MongoDB Query
+                logger.info("userID is: " + userid);
+                let response = await mongo_db_service.getSystemConfig(userid);
+                res.status(200).send(response);
+                logger.http(req.hostname + req.url + " Request successful");
+            }
+        }
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+        }
+    })();
+})
 
-    } else {
-        logger.info("Die Parameter liegen in keiner gültigen Form vor!");
-        res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
-        return;
-    }
+config.post("/config_service/API/v2/systemIntervall", (req, res) => {
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.debug(req.hostname + req.url + " %o", req.body);
+    (async () => {
+        try {
+            //GET Credentials
+            const userid = req.body.userid.toString();
+            if (userid != undefined) {
+                //define MongoDB Query
+                logger.info("userID is: " + userid);
+                let response = await mongo_db_service.getSystemConfig(userid);
+                res.status(200).send(response);
+                logger.http(req.hostname + req.url + " Request successful");
+            }else{
+                res.status(400).send("UserID is missing");
+                logger.error(req.hostname + req.url + " Request failed");
+            }
+        }
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+        }
+    })();
+})
+
+config.post("/config_service/API/v2/deviceConfig", (req, res) => {
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.debug(req.hostname + req.url + " %o", req.body);
+    (async () => {
+        try {
+            //GET Credentials
+            const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
+            if (deviceID != undefined) {
+                //define MongoDB Query
+                logger.info("userID is: " + deviceID);
+                let response = await mongo_db_service.getDeviceConfig(deviceID);
+                res.status(200).send(response);
+                logger.http(req.hostname + req.url + " Request successful");
+            }
+        }
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+        }
+    })();
 })
 
 config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
@@ -148,14 +171,14 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
                 res.sendStatus(500);
                 return;
             } else {
-                if(rows.length > 0){
-                    res.status(400).send("Die Karte mit der ID wurde bereits für " + rows[0].benutzername+ " verwendet");
-                    logger.error("Die Karte mit der ID wurde bereits für " + rows[0].benutzername+ " verwendet");
+                if (rows.length > 0) {
+                    res.status(400).send("Die Karte mit der ID wurde bereits für " + rows[0].benutzername + " verwendet");
+                    logger.error("Die Karte mit der ID wurde bereits für " + rows[0].benutzername + " verwendet");
                     return;
-                }else{
-                    const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES('"+ benutzername + "','"+ rfid_uid +"','"+ aws_id +"');");
+                } else {
+                    const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES('" + benutzername + "','" + rfid_uid + "','" + aws_id + "');");
                     logger.debug(req.hostname + req.url + " " + queryString)
-            
+
                     getConnection().query(queryString, (err, rows, fields) => {
                         if (err) {
                             //throw error if not successful
@@ -174,8 +197,8 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
                 }
             }
         })
-        
-    }else{
+
+    } else {
         res.status(500).send("Die Daten liegen in keiner gültigen Form vor");
         logger.error("Die Daten liegen in keiner gültigen Form vor");
     }
@@ -188,7 +211,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
     const row_id = parseInt(req.query.row_id); //const user_email = 'chris_steiner@me.com';
     if (row_id != undefined) {
         //define MongoDB Query
-        const queryString = SqlString.format("DELETE FROM t_RFID_config where id ="+ row_id +";");
+        const queryString = SqlString.format("DELETE FROM t_RFID_config where id =" + row_id + ";");
         logger.debug(req.hostname + req.url + " " + queryString)
 
         getConnection().query(queryString, (err, rows, fields) => {
@@ -207,7 +230,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
             }
         })
 
-    }else{
+    } else {
         res.status(500).send("Card ID liegt in keiner gültigen Form vor");
         logger.error("Card ID liegt in keiner gültigen Form vor");
     }
@@ -227,8 +250,11 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
     const temp_hysterese = parseInt(req.body.temp_hysterese);
 
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
-        try {
-            (async function () {
+        (async () => {
+            try {
+                //GET Credentials
+                const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
+
                 const newDocument = {
                     config_PIR_timeout_sek: aussenlicht_timeout,
                     doorOpenTime_sek: doorOpen,
@@ -237,17 +263,17 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
 
                 };
                 logger.debug("%o", newDocument);
-                const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
-                logger.debug("%o", cursor)
-                res.status(200).send(cursor);
+                //define MongoDB Query
+                logger.info("userID is: " + deviceID);
+                response = await mongo_db_service.getDeviceConfig(deviceID, newDocument);
+                res.status(200).send(response);
                 logger.http(req.hostname + req.url + " Request successful");
-                return;
-            }(userid));
-        }
-        catch (e) {
-            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + "catched error500 (API didn´t break) -> %o", e);
-        }
+            }
 
+            catch (e) {
+                res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+            }
+        })
     } else {
         logger.error("Die Parameter liegen in keiner gültigen Form vor! -- Abbruch")
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
