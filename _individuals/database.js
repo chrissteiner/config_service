@@ -8,5 +8,4 @@ module.exports.mongodb = {
     connectionString: "mongodb+srv://user_chrizly:OsUel2kRz3SY9r2X@chrizly.wtusg.mongodb.net/db_termine?retryWrites=true&w=majority",
     database: "db_chrizly_buero",
     collection_config: "iot_config",
-    // collection_items: "items"
 }
