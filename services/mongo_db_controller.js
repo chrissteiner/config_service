@@ -51,33 +51,33 @@ class dbController {
 
     // find All
     //---------------------------------------------------------------------------------------------------------------------------
-    async getMassnahmen() {
-        const cursor = database_office.collection(database_credits.mongodb.database_office.collection).find();
-        const response = await cursor.toArray();
-        logger.silly("%o", response)
-        return response;
-    }
-    // InsertOne
-    //---------------------------------------------------------------------------------------------------------------------------
-    async insertMassnahme(document) {
-        logger.silly("%o", document);
-        const result = await database_office.collection(database_credits.mongodb.database_office.collection).insertOne(document)
-        logger.debug("Inserted Document with ID: %o", result.insertedId)
-        return { 'message': 'Inserted Document with ID: ' + result.insertedId };
-    }
-    //Update One
-    //---------------------------------------------------------------------------------------------------------------------------
-    async updateMassnahme(document) {
-        // const myquery = { item: document._id };
-        const myquery = { '_id': new ObjectId(document._id) }; // Upsert true does not work if filter is _id
-        delete document._id; //die ID darf nicht beim $set enthalten sein, sonst kommt ein Error "id darf nicht upgedated werden mimimi"
+    // async getMassnahmen() {
+    //     const cursor = database_office.collection(database_credits.mongodb.database_office.collection).find();
+    //     const response = await cursor.toArray();
+    //     logger.silly("%o", response)
+    //     return response;
+    // }
+    // // InsertOne
+    // //---------------------------------------------------------------------------------------------------------------------------
+    // async insertMassnahme(document) {
+    //     logger.silly("%o", document);
+    //     const result = await database_office.collection(database_credits.mongodb.database_office.collection).insertOne(document)
+    //     logger.debug("Inserted Document with ID: %o", result.insertedId)
+    //     return { 'message': 'Inserted Document with ID: ' + result.insertedId };
+    // }
+    // //Update One
+    // //---------------------------------------------------------------------------------------------------------------------------
+    // async updateMassnahme(document) {
+    //     // const myquery = { item: document._id };
+    //     const myquery = { '_id': new ObjectId(document._id) }; // Upsert true does not work if filter is _id
+    //     delete document._id; //die ID darf nicht beim $set enthalten sein, sonst kommt ein Error "id darf nicht upgedated werden mimimi"
 
-        const update = { $set: document };
-        const cursor = await database_office.collection(database_credits.mongodb.database_office.collection).replaceOne(myquery, document);
-        logger.silly(" %o ", JSON.stringify(update))
-        logger.debug("Updated %o ", cursor.modifiedCount + " Document")
-        return { 'message': 'Updated ' + cursor.modifiedCount + ' item' };
-    }
+    //     const update = { $set: document };
+    //     const cursor = await database_office.collection(database_credits.mongodb.database_office.collection).replaceOne(myquery, document);
+    //     logger.silly(" %o ", JSON.stringify(update))
+    //     logger.debug("Updated %o ", cursor.modifiedCount + " Document")
+    //     return { 'message': 'Updated ' + cursor.modifiedCount + ' item' };
+    // }
 }
 
 
