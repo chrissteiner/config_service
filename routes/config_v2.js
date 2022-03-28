@@ -142,6 +142,8 @@ config.post("/config_service/API/v2/deviceConfig", (req, res) => {
                 //define MongoDB Query
                 logger.info("userID is: " + deviceID);
                 let response = await mongo_db_service.getDeviceConfig(deviceID);
+                delete response._id;
+                delete response.deviceID;
                 res.status(200).send(response);
                 logger.http(req.hostname + req.url + " Request successful");
             }
