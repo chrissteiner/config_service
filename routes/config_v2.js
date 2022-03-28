@@ -131,13 +131,36 @@ config.post("/config_service/API/v2/systemIntervall", (req, res) => {
     })();
 })
 
-config.post("/config_service/API/v2/deviceConfig", (req, res) => {
+config.post("/config_service/API/v2/deviceConfig", (req, res) => { //this is for ESP
     logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.body);
     (async () => {
         try {
             //GET Credentials
             const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
+            if (deviceID != undefined) {
+                //define MongoDB Query
+                logger.info("userID is: " + deviceID);
+                let response = await mongo_db_service.getDeviceConfig(deviceID);
+                delete response._id;
+                delete response.deviceID;
+                res.status(200).send(response);
+                logger.http(req.hostname + req.url + " Request successful");
+            }
+        }
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+        }
+    })();
+})
+
+config.get("/config_service/API/v2/deviceConfig", (req, res) => { // this is for Services
+    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
+    logger.debug(req.hostname + req.url + " %o", req.query);
+    (async () => {
+        try {
+            //GET Credentials
+            const deviceID = req.query.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
             if (deviceID != undefined) {
                 //define MongoDB Query
                 logger.info("userID is: " + deviceID);
