@@ -6,7 +6,7 @@ const Server_defines = require('../_individuals/API_defines');
 
 // PRIVATE and PUBLIC key use 'utf8' to get string instead of byte array  (512 bit key - ja obwohl unten RS256 steht. Wieso? keinen Dau)
 // var privateKEY   = fs.readFileSync('./_config/_keys/private.key', 'utf8');
-var publicKEY    = fs.readFileSync('./_config/_keys/public.key', 'utf8');
+// var publicKEY    = fs.readFileSync('./_config/_keys/public.key', 'utf8');
 
 module.exports = {
 /*
