@@ -15,7 +15,6 @@ module.exports = {
         ready_for_work: false, // wenn einer der unteren false ist, ist auch das hier false
         sql_db_health: false,
         mongoDB_health: false,
-        aws_mqtt_health: false,
         api_health: false
     },
     /*
