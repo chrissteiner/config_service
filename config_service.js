@@ -17,7 +17,7 @@ app.use(function(req, res, next) {
   // der Header Type "Authorization" wird für Angular benötigt, damit der Bearer mitgesendet werden darf. Ob ich die anderen benötige weiß ich nicht. Kommt von Google und sollte mal geprüft werden
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  if(Server_defines.System_health.ready_for_work == false){res.status(425).send({"message":"System ist starting or unhealthy", "data": Server_defines.System_health}); logger.error({"message":"System ist starting or unhealthy", "data": Server_defines.System_health}); return;}
+  logger.http(req.method + req.hostname + req.url + " erfolgreich aufgerufen");
   next();
 });
 
@@ -84,7 +84,7 @@ healthy = 300;
 function System_health(){
   if(
     Server_defines.System_health.mongoDB_health == false ||
-    Server_defines.System_health.api_health == false
+    Server_defines.System_health.sql_db_health == false
     ){
       Server_defines.System_health.ready_for_work = false;
       if(healthy != 300){

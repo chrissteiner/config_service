@@ -19,6 +19,7 @@ const mongo_db_service = new db_Access.dbController;
 //Initialize Logging
 const logger = require("../_config/logging_defines");
 const { response } = require('express');
+const { System_health } = require('../_individuals/API_defines');
 vOption = {
     //These variables for JWT I have to put into verify to make sure the same user is calling
     issuer: "Authorizaxtion/Resource/This server",
@@ -29,7 +30,6 @@ vOption = {
 // eval(fs.readFileSync('./_individuals/logging_defines.js')+'');
 
 config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
@@ -58,7 +58,6 @@ config.post("/config_service/API/v2/getRFIDconfig", (req, res) => {
 })
 
 config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.query);
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
@@ -85,8 +84,8 @@ config.get("/config_service/API/v2/getRFIDAccounts", (req, res) => {
         }
     })
 })
+
 config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     (async () => {
@@ -108,7 +107,6 @@ config.post("/config_service/API/v2/getESP32Intervall", (req, res) => {
 })
 
 config.post("/config_service/API/v2/systemIntervall", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.body);
     (async () => {
         try {
@@ -132,7 +130,6 @@ config.post("/config_service/API/v2/systemIntervall", (req, res) => {
 })
 
 config.post("/config_service/API/v2/deviceConfig", (req, res) => { //this is for ESP
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.body);
     (async () => {
         try {
@@ -155,7 +152,6 @@ config.post("/config_service/API/v2/deviceConfig", (req, res) => { //this is for
 })
 
 config.get("/config_service/API/v2/deviceConfig", (req, res) => { // this is for Services
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.debug(req.hostname + req.url + " %o", req.query);
     (async () => {
         try {
@@ -178,7 +174,6 @@ config.get("/config_service/API/v2/deviceConfig", (req, res) => { // this is for
 })
 
 config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.body);
     //GET Credentials
     const benutzername = req.body.benutzername.toString(); //const user_email = 'chris_steiner@me.com';
@@ -230,7 +225,6 @@ config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
 })
 
 config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     logger.verbose(req.hostname + req.url + " %o", req.query);
     //GET Credentials
     const row_id = parseInt(req.query.row_id); //const user_email = 'chris_steiner@me.com';
@@ -262,7 +256,6 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
 })
 
 config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
-    logger.http(req.hostname + req.url + " erfolgreich aufgerufen");
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
@@ -307,7 +300,9 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
 })
 
 //stellt die Verbindung zur Datenbank über den Connection-Pool her
-function getConnection() { return pool }
+function getConnection() { 
+    System_health.sql_db_health = true // funktioniert nicht, aber damit es dauerhaft auf true ist
+    return pool }
 
 //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
 //die Konfiguration dieser Variablen ist in /Individuals/database.js
