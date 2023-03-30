@@ -17,7 +17,7 @@ app.use(function(req, res, next) {
   // der Header Type "Authorization" wird für Angular benötigt, damit der Bearer mitgesendet werden darf. Ob ich die anderen benötige weiß ich nicht. Kommt von Google und sollte mal geprüft werden
   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  if(Server_defines.database_health == false){res.status(425).send("Request came too early, startup running"); logger.info("Request came too early, startup running"); return;}
+  if(Server_defines.System_health.ready_for_work == false){res.status(425).send({"message":"System ist starting or unhealthy", "data": Server_defines.System_health}); logger.error({"message":"System ist starting or unhealthy", "data": Server_defines.System_health}); return;}
   next();
 });
 
@@ -39,7 +39,7 @@ app.get('/config_service/logging/:newloglevel', (req, res) => {
 
 app.get('/config_service/healthcheck', (req, res) => { //aws healthcheck
   serivicename = helper.getServiceName()
-  res.status(200).send({'message':true, 'servicename' : servicename, 'comment': "Up and Running", 'supported_versions': Server_defines.supported_versions});
+  res.status(200).send({'message':true, 'servicename' : servicename, 'comment': "Up and Running", 'supported_versions': Server_defines.supported_versions, "health": Server_defines.System_health});
 });
 
 // GET servicename ----------------------
@@ -76,6 +76,7 @@ portscanner.findAPortNotInUse(port_range, Server_defines.Server_address).then(po
   var usingport = process.env.PORT || port; //AWS elastic beanstalk needs the environment port
     app.listen(usingport, () => {
     logger.info(servicename + ": Server is up an running on " + usingport)
+    Server_defines.System_health.api_health = true
   })
 });
 
