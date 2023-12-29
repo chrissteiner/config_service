@@ -234,9 +234,6 @@ config.put("/config_service/API/v2/updateESP32Intervall", async (req, res) => {
 
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
         try {
-            //GET Credentials
-            const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
-
             const newDocument = {
                 config_PIR_timeout_sek: aussenlicht_timeout,
                 doorOpenTime_sek: doorOpen,
@@ -245,8 +242,8 @@ config.put("/config_service/API/v2/updateESP32Intervall", async (req, res) => {
             };
             logger.debug("%o", newDocument);
             //define MongoDB Query
-            logger.info("userID is: " + deviceID);
-            response = await mongo_db_service.getDeviceConfig(deviceID, newDocument);
+            logger.info("userID is: " + userid);
+            const response = await mongo_db_service.updateSystemConfig(userid, newDocument);
             res.status(200).send(response);
             logger.http(req.hostname + req.url + " Request successful");
         }

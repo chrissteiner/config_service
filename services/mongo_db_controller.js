@@ -40,9 +40,7 @@ class dbController {
         return cursor;
     }
 
-    async updateSystemConfig(deviceID, newDocument) {
-        const myquery = { 'deviceID': deviceID };
-        console.debug(myquery);
+    async updateSystemConfig(userid, newDocument) {
         const cursor = await database.collection(database_credits.mongodb.collection_config).updateOne({ userID: { $eq: userid } }, { $set: newDocument });
         logger.debug("%o", cursor)
         return cursor;
