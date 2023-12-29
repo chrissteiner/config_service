@@ -2,7 +2,6 @@
 const express = require('express')
 const config = express.Router()
 const database_credits = require('../_individuals/database');
-const helper = require('../_config/helpers')
 const bodyParser = require("body-parser");
 
 var SqlString = require('sqlstring');
@@ -10,7 +9,6 @@ const mysql = require('mysql')
 
 config.use(bodyParser.urlencoded({ extended: true }));
 config.use(bodyParser.json());
-const Server_defines = require('../_individuals/API_defines')
 var vOption;
 //Database
 const db_Access = require("../services/mongo_db_controller.js")
@@ -18,9 +16,9 @@ const mongo_db_service = new db_Access.dbController;
 
 //Initialize Logging
 const logger = require("../_config/logging_defines");
-const { response } = require('express');
 const { System_health } = require('../_individuals/API_defines');
 const { getDeviceConfig } = require('../middleware/deviceConfig/logic/deviceConfig.js');
+const { deleteRFIDCard, createRFIDCard } = require('../middleware/rfid/logic/rfid.js');
 vOption = {
     //These variables for JWT I have to put into verify to make sure the same user is calling
     issuer: "Authorizaxtion/Resource/This server",
@@ -130,95 +128,13 @@ config.post("/config_service/API/v2/systemIntervall", (req, res) => {
     })();
 })
 
-config.post("/config_service/API/v2/deviceConfig", (req, res) => { //this is for ESP
-    getDeviceConfig(req, res)
-})
+config.post("/config_service/API/v2/deviceConfig", getDeviceConfig)
 
-config.get("/config_service/API/v2/deviceConfig", (req, res) => { // this is for Services
-    getDeviceConfig(req, res)
-})
+config.get("/config_service/API/v2/deviceConfig", getDeviceConfig)
 
-config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
-    logger.verbose(req.hostname + req.url + " %o", req.body);
-    //GET Credentials
-    const benutzername = req.body.benutzername.toString(); //const user_email = 'chris_steiner@me.com';
-    const rfid_uid = req.body.rfid_UID.toString(); //const user_email = 'chris_steiner@me.com';
-    const aws_id = req.body.aws_id.toString(); //const user_email = 'chris_steiner@me.com';
-    if (benutzername != '' && rfid_uid != undefined && aws_id != undefined) {
+config.post("/config_service/API/v2/createRFIDCard", createRFIDCard)
 
-        const queryString = SqlString.format("Select * FROM t_RFID_config WHERE rfid_uid = '" + rfid_uid + "';");
-        logger.debug(req.hostname + req.url + " " + queryString)
-
-        getConnection().query(queryString, (err, rows, fields) => {
-            if (err) {
-                //throw error if not successful
-                logger.error(req.hostname + req.url + " Error in DB communication!: " + err)
-                res.sendStatus(500);
-                return;
-            } else {
-                if (rows.length > 0) {
-                    res.status(400).send("Die Karte mit der ID wurde bereits für " + rows[0].benutzername + " verwendet");
-                    logger.error("Die Karte mit der ID wurde bereits für " + rows[0].benutzername + " verwendet");
-                    return;
-                } else {
-                    const queryString = SqlString.format("INSERT INTO t_RFID_config (benutzername, rfid_uid, aws_id) VALUES('" + benutzername + "','" + rfid_uid + "','" + aws_id + "');");
-                    logger.debug(req.hostname + req.url + " " + queryString)
-
-                    getConnection().query(queryString, (err, rows, fields) => {
-                        if (err) {
-                            //throw error if not successful
-                            logger.error(req.hostname + req.url + " Insert cannot be done! Error: " + err)
-                            res.sendStatus(500);
-                            return;
-                        } else {
-                            logger.info(req.hostname + req.url + " New Card created: " + rfid_uid);
-                            logger.debug("Got Data: %o", rows);
-                            logger.debug("Got Rows: %o", rows.length);
-                            //res.json(rows)
-                            res.status(200).send(rows);
-                            logger.http(req.hostname + req.url + " Request successful");
-                        }
-                    })
-                }
-            }
-        })
-
-    } else {
-        res.status(500).send("Die Daten liegen in keiner gültigen Form vor");
-        logger.error("Die Daten liegen in keiner gültigen Form vor");
-    }
-})
-
-config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
-    logger.verbose(req.hostname + req.url + " %o", req.query);
-    //GET Credentials
-    const row_id = parseInt(req.query.row_id); //const user_email = 'chris_steiner@me.com';
-    if (row_id != undefined) {
-        //define MongoDB Query
-        const queryString = SqlString.format("DELETE FROM t_RFID_config where id =" + row_id + ";");
-        logger.debug(req.hostname + req.url + " " + queryString)
-
-        getConnection().query(queryString, (err, rows, fields) => {
-            if (err) {
-                //throw error if not successful
-                logger.error(req.hostname + req.url + " Delete cannot be done! Error: " + err)
-                res.sendStatus(500);
-                return;
-            } else {
-                logger.info(req.hostname + req.url + " Card deleted: " + row_id);
-                logger.debug("Got Data: %o", rows);
-                logger.debug("Got Rows: %o", rows.length);
-                //res.json(rows)
-                res.status(200).send(rows);
-                logger.http(req.hostname + req.url + " Request successful");
-            }
-        })
-
-    } else {
-        res.status(500).send("Card ID liegt in keiner gültigen Form vor");
-        logger.error("Card ID liegt in keiner gültigen Form vor");
-    }
-})
+config.delete("/config_service/API/v2/deleteRFIDCard", deleteRFIDCard)
 
 config.put("/config_service/API/v2/updateESP32Intervall", async (req, res) => {
     // res.status(501).send("Endpoint was moved - implementation waiting");
@@ -243,7 +159,8 @@ config.put("/config_service/API/v2/updateESP32Intervall", async (req, res) => {
             logger.debug("%o", newDocument);
             //define MongoDB Query
             logger.info("userID is: " + userid);
-            const response = await mongo_db_service.updateSystemConfig(userid, newDocument);
+            await mongo_db_service.updateSystemConfig(userid, newDocument);
+            let response = await mongo_db_service.getSystemConfig(userid);
             res.status(200).send(response);
             logger.http(req.hostname + req.url + " Request successful");
         }
