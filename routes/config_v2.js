@@ -20,6 +20,7 @@ const mongo_db_service = new db_Access.dbController;
 const logger = require("../_config/logging_defines");
 const { response } = require('express');
 const { System_health } = require('../_individuals/API_defines');
+const { getDeviceConfig } = require('../middleware/deviceConfig/logic/deviceConfig.js');
 vOption = {
     //These variables for JWT I have to put into verify to make sure the same user is calling
     issuer: "Authorizaxtion/Resource/This server",
@@ -118,7 +119,7 @@ config.post("/config_service/API/v2/systemIntervall", (req, res) => {
                 let response = await mongo_db_service.getSystemConfig(userid);
                 res.status(200).send(response);
                 logger.http(req.hostname + req.url + " Request successful");
-            }else{
+            } else {
                 res.status(400).send("UserID is missing");
                 logger.error(req.hostname + req.url + " Request failed");
             }
@@ -130,47 +131,11 @@ config.post("/config_service/API/v2/systemIntervall", (req, res) => {
 })
 
 config.post("/config_service/API/v2/deviceConfig", (req, res) => { //this is for ESP
-    logger.debug(req.hostname + req.url + " %o", req.body);
-    (async () => {
-        try {
-            //GET Credentials
-            const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
-            if (deviceID != undefined) {
-                //define MongoDB Query
-                logger.info("userID is: " + deviceID);
-                let response = await mongo_db_service.getDeviceConfig(deviceID);
-                delete response._id;
-                delete response.deviceID;
-                res.status(200).send(response);
-                logger.http(req.hostname + req.url + " Request successful");
-            }
-        }
-        catch (e) {
-            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
-        }
-    })();
+    getDeviceConfig(req, res)
 })
 
 config.get("/config_service/API/v2/deviceConfig", (req, res) => { // this is for Services
-    logger.debug(req.hostname + req.url + " %o", req.query);
-    (async () => {
-        try {
-            //GET Credentials
-            const deviceID = req.query.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
-            if (deviceID != undefined) {
-                //define MongoDB Query
-                logger.info("userID is: " + deviceID);
-                let response = await mongo_db_service.getDeviceConfig(deviceID);
-                delete response._id;
-                delete response.deviceID;
-                res.status(200).send(response);
-                logger.http(req.hostname + req.url + " Request successful");
-            }
-        }
-        catch (e) {
-            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
-        }
-    })();
+    getDeviceConfig(req, res)
 })
 
 config.post("/config_service/API/v2/createRFIDCard", (req, res) => {
@@ -255,7 +220,7 @@ config.delete("/config_service/API/v2/deleteRFIDCard", (req, res) => {
     }
 })
 
-config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
+config.put("/config_service/API/v2/updateESP32Intervall", async (req, res) => {
     // res.status(501).send("Endpoint was moved - implementation waiting");
     // return;
     // logger.verbose(req.hostname + req.url + " %o", req.body);
@@ -268,30 +233,27 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
     const temp_hysterese = parseInt(req.body.temp_hysterese);
 
     if (aussenlicht_timeout > 10 && doorOpen >= 1 && temp_intervall > 59 && temp_hysterese >= 0 && userid != undefined) {
-        (async () => {
-            try {
-                //GET Credentials
-                const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
+        try {
+            //GET Credentials
+            const deviceID = req.body.deviceID.toString(); //const user_email = 'chris_steiner@me.com';
 
-                const newDocument = {
-                    config_PIR_timeout_sek: aussenlicht_timeout,
-                    doorOpenTime_sek: doorOpen,
-                    config_Temp_Intervall_sek: temp_intervall,
-                    temp_hysterese: temp_hysterese,
+            const newDocument = {
+                config_PIR_timeout_sek: aussenlicht_timeout,
+                doorOpenTime_sek: doorOpen,
+                config_Temp_Intervall_sek: temp_intervall,
+                temp_hysterese: temp_hysterese
+            };
+            logger.debug("%o", newDocument);
+            //define MongoDB Query
+            logger.info("userID is: " + deviceID);
+            response = await mongo_db_service.getDeviceConfig(deviceID, newDocument);
+            res.status(200).send(response);
+            logger.http(req.hostname + req.url + " Request successful");
+        }
 
-                };
-                logger.debug("%o", newDocument);
-                //define MongoDB Query
-                logger.info("userID is: " + deviceID);
-                response = await mongo_db_service.getDeviceConfig(deviceID, newDocument);
-                res.status(200).send(response);
-                logger.http(req.hostname + req.url + " Request successful");
-            }
-
-            catch (e) {
-                res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
-            }
-        })
+        catch (e) {
+            res.status(500).send({ 'message': "cannot execute API: " + e }); logger.error(req.url + " catched error500 (API didn´t break) -> %o", e);
+        }
     } else {
         logger.error("Die Parameter liegen in keiner gültigen Form vor! -- Abbruch")
         res.status(400).send({ 'message': "Die Parameter liegen in keiner gültigen Form vor!" });
@@ -300,9 +262,10 @@ config.put("/config_service/API/v2/updateESP32Intervall", (req, res) => {
 })
 
 //stellt die Verbindung zur Datenbank über den Connection-Pool her
-function getConnection() { 
+function getConnection() {
     System_health.sql_db_health = true // funktioniert nicht, aber damit es dauerhaft auf true ist
-    return pool }
+    return pool
+}
 
 //Limitiert die aktiven Sessions auf der Datenbank. Zu viele (offene) Sessions können die Performance beeinflussen
 //die Konfiguration dieser Variablen ist in /Individuals/database.js
