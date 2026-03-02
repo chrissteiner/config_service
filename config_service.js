@@ -1,3 +1,6 @@
+// Umgebungsvariablen aus .env laden (vor allen anderen requires, die sie nutzen)
+require('dotenv').config();
+
 //load our app server using express somehow..
 const express =       require('express')
 const app =           express()

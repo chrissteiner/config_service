@@ -36,6 +36,10 @@ package-lock.json
 !.vscode/extensions.json
 .history/*
 
+# Umgebungsvariablen (Zugriffsdaten)
+.env
+.env.*
+
 # misc
 /.sass-cache
 /connect.lock

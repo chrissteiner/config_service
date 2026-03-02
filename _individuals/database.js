@@ -1,11 +1,16 @@
-//PROD
-// module.exports.database_credits = {     connectionLimit:1000,   host: 'remotemysql.com', user: '8KLveBuY3O', database: '8KLveBuY3O',    password: 'rEodRhOBEC',  port: 3306 };
-module.exports.database_credits = {     connectionLimit:10,   host: '83.229.87.18', user: 'chrizly_microservice', database: 'office_chrizly',    password: 'TABry4y9na*H$!_U',  port: 3306 };
-// localhost
-// module.exports.database_credits = {     connectionLimit:10,     host: 'localhost',       user: 'root',       database: 'PMC_statistic', password: 'MakeItBig',      port: 3306 };
+// Zugriffsdaten aus Umgebungsvariablen (.env) – siehe .env.example
+
+module.exports.database_credits = {
+    connectionLimit: parseInt(process.env.SQLDB_CONNECTION_LIMIT || '10', 10),
+    host: process.env.SQLDB_HOST || 'localhost',
+    user: process.env.SQLDB_USER || 'root',
+    database: process.env.SQLDB_DATABASE || '',
+    password: process.env.SQLDB_PASSWORD || '',
+    port: parseInt(process.env.SQLDB_PORT || '3306', 10)
+};
 
 module.exports.mongodb = {
-    connectionString: "mongodb+srv://user_chrizly:OsUel2kRz3SY9r2X@chrizly.wtusg.mongodb.net/db_termine?retryWrites=true&w=majority",
-    database: "db_chrizly_buero",
-    collection_config: "iot_config",
-}
+    connectionString: process.env.MONGODB_URI || '',
+    database: process.env.MONGODB_DATABASE || 'db_chrizly_buero',
+    collection_config: process.env.MONGODB_COLLECTION_CONFIG || 'iot_config'
+};
