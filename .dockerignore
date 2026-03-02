@@ -1,0 +1,6 @@
+# Zugriffsdaten nicht ins Image (werden per env_file zur Laufzeit übergeben)
+.env
+.env.*
+node_modules
+.git
+*.log
