@@ -1,5 +1,6 @@
 services:
   configuration-service:
+    image: configuration-service:latest
     build:
       context: .
       dockerfile: Dockerfile
@@ -9,3 +10,6 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
+    deploy:
+      restart_policy:
+        condition: on-failure
